@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {box-sizing: border-box;}
+
+body { 
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+p { 
+  margin-left: 20 px;
+  margin-top: 20 px;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.header {
+  overflow: hidden;
+  background-color: #f8f8f8;
+  border-bottom : 1px solid #eee;
+  padding: 4px 10px;
+}
+
+.header a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px; 
+  line-height: 25px;
+  border-radius: 4px;
+}
+
+.header a.logo {
+  font-size: 25px;
+}
+
+.header a.active {
+  background-color: dodgerblue;
+  color: white;
+}
+
+.header-right {
+  float: right;
+}
+
+@media screen and (max-width: 500px) {
+  .header a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
+  .header-right {
+    float: none;
+  }
+}
+</style>
+
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/ZohoEmbededAppSDK.min.js"></script>
+<script type="text/javascript" src="../js/custom.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    ZOHO.embeddedApp.init().then(function(){
+      var data = {};
+      ZOHO.CRM.API.getOrgVariable("groove001.syncstatus").then(function(data){
+          status = data.Success.Content;
+          if(status == "Yet to sync" || status == "yet to sync"){
+
+              $("#syncnow").val('Sync Now');
+              $("#syncnow").attr('disabled', false);
+              $('#status').html('Yet to sync');          
+          } else{
+              $("#syncnow").val('Synchronized');
+              $("#syncnow").attr('disabled', true);
+              $('#status').html('Sync Completed');
+
+          }
+      });
+
+    })
+  })
+</script>
+
+</head>
+<body>
+
+<div class="header">
+  <a href="#" class="logo">Groove Extension Sync</a>
+</div>
+
+<div class="vmiddle dIB  pT20" id="header1" style="top:10px;margin-left:50px;position: relative;display: inline-block;vertical-align: middle;margin: 10px;font-size: 1.1em;">&nbsp;&nbsp;&nbsp;<a id="show_sync_div"  style="text-decoration: none; cursor: pointer; border-bottom: 2px solid rgb(44, 123, 208);">Dashboard</a> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp;</div>
+
+<div>
+
+<div >
+  <table style="padding:30px 50px 1px;margin-left: 0px;">  
+    <tr>  
+    <td height="10px" colspan="2" width="100%">This extension syncs all the customer data from Groove with Zoho CRM<br><br> Once synchronized, ticket data from Groove will be displayed as a related list in each contact's record
+<br><br> </td>
+    </tr>
+ </table>
+</div>
+<table style="padding:1px 50px;margin-left: 0px;">
+<tr>
+    <td  height="10px" style="width:130px;vertical-align:top;">  Sync Status </td> <td  class = "tdid"><span id = "status">Yet to sync</span></td>
+</tr> 
+<tr>
+<td height="10px" colspan="2" > <br><input id="syncnow" type="button" style="background: #4B99AD;padding: 8px 15px 8px 15px;border: none;color: #fff;margin-left: 75px; font-size: 12pt"  onclick="Groove.syncNow();" value="Sync Now"/> </td>
+ </tr>   
+</table>
+</div>
+
+
+
+
+</body>
+</html>
