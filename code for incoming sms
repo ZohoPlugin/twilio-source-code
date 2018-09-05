@@ -1,0 +1,75 @@
+resp = input.requestMap;
+    twilioResp = (resp.get("parameters")).toMap();
+    fromNumber = twilioResp.get("From");
+    messageContent = twilioResp.get("Body");
+    LeadId = "";
+    FinalId = "";
+    LeadRespList = zoho.crm.searchRecords("Leads", "(Mobile|=|" + fromNumber + ")");
+    for each LeadResp in LeadRespList
+    {
+        LeadId = LeadResp.get("LEADID");
+        if (((LeadId  ==  "null")  ||  (LeadId  ==  null))  ||  (LeadId  ==  ""))
+        {
+            LeadId = "";
+        }
+    }
+    ContactRespList = zoho.crm.searchRecords("Contacts", "(Mobile|=|" + fromNumber + ")");
+    for each ContactResp in ContactRespList
+    {
+        FinalId = ContactResp.get("CONTACTID");
+        if (((FinalId  ==  null)  ||  (FinalId  ==  "null"))  ||  (FinalId  ==  ""))
+        {
+            FinalId = "";
+        }
+    }
+    updateMap = { "twilio.Incoming_Message_Content" : messageContent, "twilio.SMS_Texts_Name" : "Incoming SMS", "twilio.Lead" : LeadId, "twilio.Contact" : FinalId, "twilio.Direction" : "Inbound" };
+    m = map();
+    l = List();
+    l.add(updateMap);
+    m.put("module", "twilio.SMS_Texts");
+    m.put("data", l);
+    resp = zoho.crm.invokeConnector("crm.create", m);
+    if (((LeadId  !=  null)  &&  (LeadId  !=  "null"))  &&  (LeadId  !=  ""))
+    {
+        signalleadResp = zoho.crm.getRecordById("Leads", LeadId.toLong());
+        Leademail = signalleadResp.get("Email");
+        if ((Leademail  !=  "")  ||  (Leademail  !=  null))
+        {
+            signalMap = map();
+            signalMap.put("signal_namespace", "twilio.incomingsmssignal");
+            signalMap.put("email", Leademail);
+            signalMap.put("subject", "Incoming SMS");
+            signalMap.put("message", messageContent);
+            actionsList = List();
+            actionMap = map();
+            actionMap.put("type", "link");
+            actionMap.put("display_name", "View Email");
+            actionMap.put("url", "www.google.com");
+            actionsList.add(actionMap);
+            signalMap.put("actions", actionsList);
+            result = zoho.crm.invokeConnector("raisesignal", signalMap);
+            info result;
+        }
+    }
+    if (((FinalId  !=  null)  &&  (FinalId  !=  "null"))  &&  (FinalId  !=  ""))
+    {
+        signalcontactResp = zoho.crm.getRecordById("Contacts", FinalId.toLong());
+        Contactemail = signalcontactResp.get("Email");
+        if ((Contactemail  !=  "")  ||  (Contactemail  !=  null))
+        {
+            signalMapx = map();
+            signalMapx.put("signal_namespace", "twilio.incomingsmssignal");
+            signalMapx.put("email", Contactemail);
+            signalMapx.put("subject", "Incoming SMS");
+            signalMapx.put("message", messageContent);
+            actionsListx = List();
+            actionMapx = map();
+            actionMapx.put("type", "link");
+            actionMapx.put("display_name", "View Email");
+            actionMapx.put("url", "www.google.com");
+            actionsListx.add(actionMapx);
+            signalMapx.put("actions", actionsListx);
+            resultx = zoho.crm.invokeConnector("raisesignal", signalMapx);
+            info resultx;
+        }
+    }
