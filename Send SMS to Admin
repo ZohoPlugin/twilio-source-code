@@ -1,0 +1,56 @@
+
+    m = map();
+    m.put("type", "CurrentUser");
+    resp = zoho.crm.invokeConnector(("crm.getusers"), m); 
+    response = resp.get("response");
+    users = (response.getJSON("users").toJSONList()).toString();
+    indMobile = users.getJSON("mobile");
+    leadId = input.lead.get("Leads.ID");
+    datamap = map();
+    datamap.put("module", "Leads");
+    datamap.put("id", leadId);
+    resp = zoho.crm.invokeConnector(("crm.get"), datamap);
+    resp1 = (resp.get("response")).toMap();
+    res = resp1.get("data");
+    if (res.startsWith("["))
+    {
+        temp = res.subString(1,(res.length()  -  1));
+    }
+    else
+    {
+        temp = (res.toJSONList()).toString();
+    }
+    reqq = temp.toMap();
+    fullName = reqq.get("Last_Name");
+    mobile = reqq.get("Mobile");
+    tmobiletemp = zoho.crm.getOrgVariable("twilio.Twilio_Mobile_Number");
+    if (tmobiletemp.contains(" "))
+    {
+        twiliomobile = tmobiletemp.replaceAll(" ","",false);
+    }
+    else
+    {
+        twiliomobile = tmobiletemp;
+    }
+    if (twiliomobile.contains("-"))
+    {
+        twiliomobilenew = twiliomobile.replaceAll("-","",false);
+    }
+    else
+    {
+        twiliomobilenew = tmobiletemp;
+    }
+    twilioAccSId = zoho.crm.getOrgVariable(("twilio.Account_SID"));
+    authtokenTwilio = zoho.crm.getOrgVariable("twilio.AuthToken");
+    msg = zoho.crm.getOrgVariable("twilio.Users_Message");
+    messageToBeSent = fullName + " " + mobile + " " + msg;
+    baseEncoded = zoho.encryption.base64Encode(twilioAccSId + ":" + authtokenTwilio);
+    encode = baseEncoded.removeFirstOccurence("\n");
+    headermap = map();
+    headermap.put("Authorization", "Basic " + encode);
+    mappp = map();
+    mappp.put("To", indMobile);
+    mappp.put("From", twiliomobilenew);
+    mappp.put("Body", messageToBeSent);
+    respp = postUrl((("https://api.twilio.com/2010-04-01/Accounts/") + twilioAccSId) + "/Messages.json", mappp, headermap);
+    info respp;
