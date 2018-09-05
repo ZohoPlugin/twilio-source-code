@@ -1,0 +1,9 @@
+ getmap = { "nameSpace" : "platform.twilio" };
+    apiresponse = zoho.crm.invokeConnector("crm.zapikey", getmap);
+    zapikey = apiresponse.get("response");
+    info zapikey;
+    url = "http://platform.zoho.com/crm/v2/settings/custom_functions/twilio.incomingsms/execute?zapikey=";
+    FinalUrl = url + zapikey;
+    NewUrl = FinalUrl.replaceFirst("http","https",false);
+    result = zoho.crm.invokeConnector("crm.set", { "apiname" : "twilio.Incoming_WebHook_URL", "value" : NewUrl });
+    info result;
