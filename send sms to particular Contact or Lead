@@ -1,0 +1,150 @@
+ idz = input.sms_texts.get("twilio.SMS_Texts.ID");
+    datamap = map();
+    datamap.put("module", "twilio.SMS_Texts");
+    datamap.put("id", idz);
+    resp = zoho.crm.invokeConnector(("crm.get"), datamap);
+    respMap = (resp.get("response")).toMap();
+    users = respMap.get("data");
+    if (users.startsWith("["))
+    {
+        temp = users.subString(1,(users.length()  -  1));
+    }
+    else
+    {
+        temp = (users.toJSONList()).toString();
+    }
+    usersVal = temp.toMap();
+    CustomSMSMessage = usersVal.get("twilio.Custom_SMS_Message");
+    if (CustomSMSMessage  ==  null)
+    {
+        info "No SMS Content";
+    }
+    else
+    {
+        tmobiletemp = zoho.crm.getOrgVariable("twilio.Twilio_Mobile_Number");
+        if (tmobiletemp.contains(" "))
+        {
+            twiliomobile = tmobiletemp.replaceAll(" ","",false);
+        }
+        else
+        {
+            twiliomobile = tmobiletemp;
+        }
+        if (twiliomobile.contains("-"))
+        {
+            twiliomobilenew = twiliomobile.replaceAll("-","",false);
+        }
+        else
+        {
+            twiliomobilenew = tmobiletemp;
+        }
+        authtokenTwilio = zoho.crm.getOrgVariable("twilio.AuthToken");
+        twilioAccSId = zoho.crm.getOrgVariable(("twilio.Account_SID"));
+        baseEncoded = zoho.encryption.base64Encode(twilioAccSId + ":" + authtokenTwilio);
+        encode = baseEncoded.removeFirstOccurence("\n");
+        mapp = map();
+        mapp.put("Authorization", "Basic " + encode);
+        mappp = map();
+        mappp.put("From", twiliomobilenew);
+        if ((usersVal.get("twilio.Contact")  !=  null)  &&  (usersVal.get("twilio.Lead")  !=  null))
+        {
+            leadIdz = (usersVal.get("twilio.Lead")).toMap();
+            leadId = leadIdz.get("id");
+            data1map = map();
+            data1map.put("module", "Leads");
+            data1map.put("id", leadId);
+            resp1 = zoho.crm.invokeConnector(("crm.get"), data1map);
+            resppMap = (resp1.get("response")).toMap();
+            users1 = resppMap.get("data");
+            if (users1.startsWith("["))
+            {
+                temp = users1.subString(1,(users1.length()  -  1));
+            }
+            else
+            {
+                temp = (users1.toJSONList()).toString();
+            }
+            usersVal1 = temp.toMap();
+            Mobile = usersVal1.get("Mobile");
+            contactIdz = (usersVal.get("twilio.Contact")).toMap();
+            contactId = contactIdz.get("id");
+            data2map = map();
+            data2map.put("module", "Contacts");
+            data2map.put("id", contactId);
+            resp2 = zoho.crm.invokeConnector(("crm.get"), data2map);
+            resp2Map = (resp2.get("response")).toMap();
+            users2 = resp2Map.get("data");
+            if (users2.startsWith("["))
+            {
+                temp = users2.subString(1,(users2.length()  -  1));
+            }
+            else
+            {
+                temp = (users2.toJSONList()).toString();
+            }
+            usersVal2 = temp.toMap();
+            Mobile1 = usersVal2.get("Mobile");
+            mappp.put("To", Mobile);
+            mappp.put("Body", CustomSMSMessage);
+            respp = postUrl((("https://api.twilio.com/2010-04-01/Accounts/") + twilioAccSId) + "/Messages.json", mappp, mapp);
+            mappp.remove("To");
+            mappp.remove("Body");
+            mappp.put("To", Mobile1);
+            mappp.put("Body", CustomSMSMessage);
+            resppp = postUrl((("https://api.twilio.com/2010-04-01/Accounts/") + twilioAccSId) + "/Messages.json", mappp, mapp);
+            info resppp;
+        }
+        else if ((usersVal.get("twilio.Lead")  !=  null)  &&  (usersVal.get("twilio.Contact")  ==  null))
+        {
+            leadIdz = (usersVal.get("twilio.Lead")).toMap();
+            leadId = leadIdz.get("id");
+            data1map = map();
+            data1map.put("module", "Leads");
+            data1map.put("id", leadId);
+            resp1 = zoho.crm.invokeConnector(("crm.get"), data1map);
+            resppMap = (resp1.get("response")).toMap();
+            users1 = resppMap.get("data");
+            if (users1.startsWith("["))
+            {
+                temp = users1.subString(1,(users1.length()  -  1));
+            }
+            else
+            {
+                temp = (users1.toJSONList()).toString();
+            }
+            usersVal1 = temp.toMap();
+            Mobile = usersVal1.get("Mobile");
+            mappp.put("To", Mobile);
+            mappp.put("Body", CustomSMSMessage);
+            respp = postUrl((("https://api.twilio.com/2010-04-01/Accounts/") + twilioAccSId) + "/Messages.json", mappp, mapp);
+            info respp;
+        }
+        else if ((usersVal.get("twilio.Contact")  !=  null)  &&  (usersVal.get("twilio.Lead")  ==  null))
+        {
+            contactIdz = (usersVal.get("twilio.Contact")).toMap();
+            contactId = contactIdz.get("id");
+            data2map = map();
+            data2map.put("module", "Contacts");
+            data2map.put("id", contactId);
+            resp2 = zoho.crm.invokeConnector(("crm.get"), data2map);
+            resp2Map = (resp2.get("response")).toMap();
+            users2 = resp2Map.get("data");
+            if (users2.startsWith("["))
+            {
+                temp = users2.subString(1,(users2.length()  -  1));
+            }
+            else
+            {
+                temp = (users2.toJSONList()).toString();
+            }
+            usersVal2 = temp.toMap();
+            Mobile1 = usersVal2.get("Mobile");
+            mappp.put("To", Mobile1);
+            mappp.put("Body", CustomSMSMessage);
+            resppp = postUrl((("https://api.twilio.com/2010-04-01/Accounts/") + twilioAccSId) + "/Messages.json", mappp, mapp);
+        }
+        else
+        {
+            info "No Number to send message!";
+        }
+    }
